@@ -3,19 +3,22 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 /*
  * CONFIG VARIABLES
  */
-var (
-	address string = "0.0.0.0"
-	port    int    = 6666
-)
+type config struct {
+	Address string `yaml:"address"`
+	Port    int    `yaml:"port"`
+}
 
 func main() {
 	// ----------------
@@ -23,7 +26,8 @@ func main() {
 	// ----------------
 	fmt.Print("Importing config.yml")
 	quit := loading()
-	// TODO IMPORT CONFIG
+	var config config
+	config.load("config.yml")
 	quit <- "Done!"
 	// ----------------
 
@@ -118,4 +122,18 @@ func startServer() chan int {
 		}
 	}()
 	return status
+}
+
+func (c *config) load(path string) *config {
+
+	yamlFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Printf("yamlFile.Get err   #%v ", err)
+	}
+	err = yaml.Unmarshal(yamlFile, c)
+	if err != nil {
+		fmt.Printf("Unmarshal: %v", err)
+	}
+
+	return c
 }

@@ -1,0 +1,7 @@
+table1:
+    id:
+        type: int8
+    name:
+        type: string
+    age:
+        type: int8
