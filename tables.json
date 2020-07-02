@@ -1,0 +1,9 @@
+{
+    "table1": {
+        "Name": "",
+        "Columns": [
+            { "Name": "col1", "Type": "int" },
+            { "Name": "col2", "Type": "string" }
+        ]
+    }
+}
