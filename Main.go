@@ -72,11 +72,12 @@ func main() {
 	quit = loading()
 	jsonFile, err := ioutil.ReadFile("tables.json")
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println(err)
 	}
 	err = json.Unmarshal([]byte(jsonFile), &tables)
 	if err != nil {
-		fmt.Print(err)
+		quit <- "Error!"
+		fmt.Println(err)
 		panic("failed to import table.json")
 	}
 	quit <- "Done!"
@@ -85,13 +86,13 @@ func main() {
 	// ----------------
 	// START TCP SERVER
 	// ----------------
-	fmt.Print("Starting Server on " + config.Address + ":" + strconv.Itoa(config.Port) + " ")
+	fmt.Print("Starting Server on " + config.Address + ":" + strconv.Itoa(config.Port) + "")
 	quit = loading()
 	serverStatus := startServer(config.Address, config.Port, interpret)
 	if i := <-serverStatus; i == 1 {
 		quit <- "Done!"
 	} else if i == 2 {
-		quit <- "An error during server startup has occured!"
+		quit <- "Error!"
 	}
 	// ----------------
 
@@ -104,13 +105,13 @@ func loading() chan string {
 	quit := make(chan string)
 	go func() {
 		for {
+			time.Sleep(500 * time.Millisecond)
 			select {
 			case msg := <-quit:
 				fmt.Print(" " + msg + "\n")
 				return
 			default:
 				fmt.Print(".")
-				time.Sleep(1000 * time.Millisecond)
 			}
 		}
 	}()
