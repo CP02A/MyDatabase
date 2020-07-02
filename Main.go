@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -68,8 +69,22 @@ func main() {
 	// ----------------
 	// Importing Tables
 	// ----------------
-	fmt.Print("Importing tables.json")
-	quit = loading()
+
+	if _, err := os.Stat("tables.json"); err == nil {
+		fmt.Print("Importing tables.json")
+		quit = loading()
+	} else if os.IsNotExist(err) {
+		fmt.Print("tables.json does not exist! Creating the file")
+		quit = loading()
+		f, err := os.Create("tables.json")
+		if err != nil {
+			quit <- "Error!"
+			fmt.Println(err)
+			return
+		}
+		f.WriteString("{}")
+		f.Close()
+	}
 	jsonFile, err := ioutil.ReadFile("tables.json")
 	if err != nil {
 		fmt.Println(err)
