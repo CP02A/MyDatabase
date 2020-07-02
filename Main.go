@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -18,6 +19,17 @@ import (
 type config struct {
 	Address string `yaml:"address"`
 	Port    int    `yaml:"port"`
+}
+
+var tables map[string]table
+
+type table struct {
+	Columns []tableColumn
+}
+
+type tableColumn struct {
+	Name string
+	Type string
 }
 
 func main() {
@@ -47,9 +59,25 @@ func main() {
 	// --------------------
 
 	// ----------------
+	// Importing Tables
+	// ----------------
+	fmt.Print("Importing tables.json")
+	quit = loading()
+	jsonFile, err := ioutil.ReadFile("tables.json")
+	if err != nil {
+		fmt.Print(err)
+	}
+	err = json.Unmarshal([]byte(jsonFile), &tables)
+	if err != nil {
+		fmt.Print(err)
+		panic("failed to import table.json")
+	}
+	quit <- "Done!"
+
+	// ----------------
 	// START TCP SERVER
 	// ----------------
-	fmt.Print("Starting Server on " + config.Address + ":" + strconv.Itoa(config.Port) + "")
+	fmt.Print("Starting Server on " + config.Address + ":" + strconv.Itoa(config.Port) + " ")
 	quit = loading()
 	serverStatus := startServer(config.Address, config.Port, interpret)
 	if i := <-serverStatus; i == 1 {
