@@ -52,9 +52,23 @@ func main() {
 	// ----------------
 	// Importing Config
 	// ----------------
-	fmt.Print("Importing config.yml")
-	quit := loading()
+	var quit chan string
 	var config config
+	if _, err := os.Stat("config.yml"); err == nil {
+		fmt.Print("Importing config.yml")
+		quit = loading()
+	} else if os.IsNotExist(err) {
+		fmt.Print("config.yml does not exist! Creating the file")
+		quit = loading()
+		f, err := os.Create("config.yml")
+		if err != nil {
+			quit <- "Error!"
+			fmt.Println(err)
+			return
+		}
+		f.WriteString("address: 0.0.0.0\nport: 6666")
+		f.Close()
+	}
 	config.load("config.yml")
 	quit <- "Done!"
 	// ----------------
