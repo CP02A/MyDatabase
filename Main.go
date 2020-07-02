@@ -21,6 +21,14 @@ type config struct {
 }
 
 func main() {
+	// -----------------
+	// Startup Messaging
+	// -----------------
+	fmt.Print("---------------------------\n")
+	fmt.Print("\tMy Database\n")
+	fmt.Print("---------------------------\n")
+	// -----------------
+
 	// ----------------
 	// Importing Config
 	// ----------------
@@ -31,26 +39,25 @@ func main() {
 	quit <- "Done!"
 	// ----------------
 
+	// --------------------
+	// Starting Interpreter
+	// --------------------
+	interpret := make(chan string)
+	go startInterpreter(interpret)
+	// --------------------
+
 	// ----------------
 	// START TCP SERVER
 	// ----------------
-	fmt.Print("Starting Server on " + address + ":" + strconv.Itoa(port) + "")
+	fmt.Print("Starting Server on " + config.Address + ":" + strconv.Itoa(config.Port) + "")
 	quit = loading()
-	serverStatus := startServer()
+	serverStatus := startServer(config.Address, config.Port, interpret)
 	if i := <-serverStatus; i == 1 {
 		quit <- "Done!"
 	} else if i == 2 {
 		quit <- "An error during server startup has occured!"
 	}
 	// ----------------
-
-	// --------------------
-	// Starting Interpreter
-	// --------------------
-	receive := make(chan string)
-	go startInterpreter(receive)
-	receive <- "test"
-	// --------------------
 
 	<-make(chan struct{})
 	return
@@ -77,12 +84,12 @@ func startInterpreter(textChannel chan string) {
 	for {
 		select {
 		case text := <-textChannel:
-			fmt.Print(text + "\n")
+			fmt.Print(text)
 		}
 	}
 }
 
-func startServer() chan int {
+func startServer(address string, port int, listener chan string) chan int {
 	status := make(chan int)
 	/*
 	 * 0 -> Offline
@@ -113,7 +120,8 @@ func startServer() chan int {
 				if strings.TrimSpace(string(netDataLine)) == "STOP" {
 					fmt.Println("TCP Stream Closed!")
 				} else {
-					fmt.Print("TCP Packet Received!: ", string(netDataLine))
+					//fmt.Print("TCP Packet Received: ", string(netDataLine))
+					listener <- string(netDataLine)
 				}
 			}
 			//t := time.Now()
