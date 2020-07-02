@@ -14,13 +14,18 @@ import (
 )
 
 /*
- * CONFIG VARIABLES
+ * CONFIG STRUCTS
  */
 type config struct {
 	Address string `yaml:"address"`
 	Port    int    `yaml:"port"`
 }
 
+// --------------
+
+/*
+ * TABLE STRUCTS
+ */
 var tables map[string]table
 
 type table struct {
@@ -31,6 +36,8 @@ type tableColumn struct {
 	Name string
 	Type string
 }
+
+// --------------
 
 func main() {
 	// -----------------
@@ -73,6 +80,7 @@ func main() {
 		panic("failed to import table.json")
 	}
 	quit <- "Done!"
+	// ----------------
 
 	// ----------------
 	// START TCP SERVER
@@ -87,6 +95,7 @@ func main() {
 	}
 	// ----------------
 
+	// keeps program running
 	<-make(chan struct{})
 	return
 }
